@@ -66,6 +66,8 @@
           <option value="Actifs immobilises">Actifs immobilisés</option>
           <option value="Passifs courants">Passifs courants</option>
           <option value="Passifs non courants">Passifs non courants</option>
+          <option value="">Passifs non courants</option>
+
         </select>
       </div>
     </div><!-- Col -->

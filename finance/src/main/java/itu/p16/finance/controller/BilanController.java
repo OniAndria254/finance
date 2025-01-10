@@ -63,7 +63,7 @@ public class BilanController {
     @GetMapping("/list")
     public ModelAndView listBilans() {
         ModelAndView mv = new ModelAndView("layout");
-        mv.addObject("page", "bilan_list"); // Inclure bilan_list.jsp
+        mv.addObject("page", "bilan/bilan_select"); // Inclure bilan_list.jsp
         mv.addObject("bilans", bilanService.getAllBilans());
         return mv;
     }
@@ -84,6 +84,14 @@ public class BilanController {
             List<BilanDetails> bilanDetails = bilanService.getBilanDetailsByEntrepriseAndYear(idEntreprise, annee);
             double totalActifs = bilanService.getTotalActifs(idEntreprise, annee);
             double totalPassifsCP = bilanService.getTotalPassifsCP(idEntreprise, annee);
+            if (totalActifs > totalPassifsCP) {
+                String error = "Le total des actifs est supérieur de " + (totalActifs - totalPassifsCP) + " euros par rapport au total des passifs et capitaux propres.";
+                mv.addObject("error", error);
+            }
+            else if (totalActifs < totalPassifsCP) {
+                String error = "Le total des passifs et capitaux propres est supérieur de " + (totalPassifsCP - totalActifs) + " euros par rapport au total des actifs.";
+                mv.addObject("error", error);
+            }
             mv.addObject("totalActifs", totalActifs);
             mv.addObject("totalPassifsCP", totalPassifsCP);
             mv.addObject("bilanDetails", bilanDetails);

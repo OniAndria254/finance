@@ -13,4 +13,9 @@ public class HomeController {
         mv.addObject("page", "test");
         return mv;
     }
+
+    @GetMapping("/test")
+    public String showInterpretationPage() {
+        return "interpretation";
+    }
 }

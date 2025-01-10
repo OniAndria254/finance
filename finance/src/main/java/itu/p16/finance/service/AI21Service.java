@@ -1,5 +1,6 @@
 package itu.p16.finance.service;
 
+import itu.p16.finance.dto.AI21Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +37,13 @@ public class AI21Service {
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
 
         try {
-            return restTemplate.postForObject(AI21_API_URL, request, String.class);
+            AI21Response response = restTemplate.postForObject(AI21_API_URL, request, AI21Response.class);
+            if (response == null || response.getChoices() == null || response.getChoices().length == 0) {
+                return "No response received";
+            }
+
+            String content = response.getChoices()[0].getMessage().getContent();
+            return content != null ? content : "No content in response";
         } catch (Exception e) {
             return "Error getting interpretation: " + e.getMessage();
         }

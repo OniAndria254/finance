@@ -47,10 +47,19 @@
 <!-- Affichage des résultats -->
 <%
     List<BilanDetails> details = (List<BilanDetails>) request.getAttribute("bilanDetails");
-    double totalActifs = Double.parseDouble(request.getAttribute("totalActifs").toString());
-    double totalPassifsCP = Double.parseDouble(request.getAttribute("totalPassifsCP").toString());
 
-    if (details != null && !details.isEmpty()) {
+
+    if (details != null && !details.isEmpty() && request.getAttribute("totalActifs") != null && request.getAttribute("totalPassifsCP") != null) {
+    String error = (String) request.getAttribute("error");
+    if(error != null)
+    {
+%>
+<div class="alert alert-danger" role="alert"><%= error%></div>
+<%
+    }
+
+        double totalActifs = Double.parseDouble(request.getAttribute("totalActifs").toString());
+        double totalPassifsCP = Double.parseDouble(request.getAttribute("totalPassifsCP").toString());
         // Filtrer les données en deux sections : Actifs et Capitaux propres et passifs
         List<BilanDetails> actifs = details.stream()
                 .filter(d -> d.getCategorie().equalsIgnoreCase("Actifs"))
