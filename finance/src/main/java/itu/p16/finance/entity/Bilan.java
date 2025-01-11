@@ -2,6 +2,7 @@ package itu.p16.finance.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 
 @Entity
@@ -11,14 +12,26 @@ public class Bilan {
     @Column(name = "id_bilan", nullable = false)
     private Integer idBilan;
     @Basic
-    @Column(name = "id_entreprise", nullable = false)
-    private Integer idEntreprise;
+    @Column(name = "description_note", nullable = true, length = 50)
+    private String descriptionNote;
     @Basic
-    @Column(name = "annee", nullable = false)
-    private Integer annee;
+    @Column(name = "valeur", nullable = false, precision = 2)
+    private BigDecimal valeur;
     @Basic
-    @Column(name = "date_creation", nullable = true)
-    private Date dateCreation;
+    @Column(name = "date_enregistrement", nullable = false)
+    private Date dateEnregistrement;
+    @ManyToOne
+    @JoinColumn(name = "id_entreprise", referencedColumnName = "id_entreprise", nullable = false)
+    private Entreprise entrepriseByIdEntreprise;
+    @ManyToOne
+    @JoinColumn(name = "id_sous_sous_categorie", referencedColumnName = "id_sous_sous_categorie")
+    private SousSousCategorie sousSousCategorieByIdSousSousCategorie;
+    @ManyToOne
+    @JoinColumn(name = "id_sous_categorie", referencedColumnName = "id_sous_categorie")
+    private SousCategorie sousCategorieByIdSousCategorie;
+    @ManyToOne
+    @JoinColumn(name = "id_categorie", referencedColumnName = "id_categorie", nullable = false)
+    private Categorie categorieByIdCategorie;
 
     public Integer getIdBilan() {
         return idBilan;
@@ -28,51 +41,60 @@ public class Bilan {
         this.idBilan = idBilan;
     }
 
-    public Integer getIdEntreprise() {
-        return idEntreprise;
+    public String getDescriptionNote() {
+        return descriptionNote;
     }
 
-    public void setIdEntreprise(Integer idEntreprise) {
-        this.idEntreprise = idEntreprise;
+    public void setDescriptionNote(String descriptionNote) {
+        this.descriptionNote = descriptionNote;
     }
 
-    public Integer getAnnee() {
-        return annee;
+    public BigDecimal getValeur() {
+        return valeur;
     }
 
-    public void setAnnee(Integer annee) {
-        this.annee = annee;
+    public void setValeur(BigDecimal valeur) {
+        this.valeur = valeur;
     }
 
-    public Date getDateCreation() {
-        return dateCreation;
+    public Date getDateEnregistrement() {
+        return dateEnregistrement;
     }
 
-    public void setDateCreation(Date dateCreation) {
-        this.dateCreation = dateCreation;
+    public void setDateEnregistrement(Date dateEnregistrement) {
+        this.dateEnregistrement = dateEnregistrement;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Bilan bilan = (Bilan) o;
-
-        if (idBilan != null ? !idBilan.equals(bilan.idBilan) : bilan.idBilan != null) return false;
-        if (idEntreprise != null ? !idEntreprise.equals(bilan.idEntreprise) : bilan.idEntreprise != null) return false;
-        if (annee != null ? !annee.equals(bilan.annee) : bilan.annee != null) return false;
-        if (dateCreation != null ? !dateCreation.equals(bilan.dateCreation) : bilan.dateCreation != null) return false;
-
-        return true;
+    
+    public Entreprise getEntrepriseByIdEntreprise() {
+        return entrepriseByIdEntreprise;
     }
 
-    @Override
-    public int hashCode() {
-        int result = idBilan != null ? idBilan.hashCode() : 0;
-        result = 31 * result + (idEntreprise != null ? idEntreprise.hashCode() : 0);
-        result = 31 * result + (annee != null ? annee.hashCode() : 0);
-        result = 31 * result + (dateCreation != null ? dateCreation.hashCode() : 0);
-        return result;
+    public void setEntrepriseByIdEntreprise(Entreprise entrepriseByIdEntreprise) {
+        this.entrepriseByIdEntreprise = entrepriseByIdEntreprise;
+    }
+
+    public SousSousCategorie getSousSousCategorieByIdSousSousCategorie() {
+        return sousSousCategorieByIdSousSousCategorie;
+    }
+
+    public void setSousSousCategorieByIdSousSousCategorie(SousSousCategorie sousSousCategorieByIdSousSousCategorie) {
+        this.sousSousCategorieByIdSousSousCategorie = sousSousCategorieByIdSousSousCategorie;
+    }
+
+    public SousCategorie getSousCategorieByIdSousCategorie() {
+        return sousCategorieByIdSousCategorie;
+    }
+
+    public void setSousCategorieByIdSousCategorie(SousCategorie sousCategorieByIdSousCategorie) {
+        this.sousCategorieByIdSousCategorie = sousCategorieByIdSousCategorie;
+    }
+
+    public Categorie getCategorieByIdCategorie() {
+        return categorieByIdCategorie;
+    }
+
+    public void setCategorieByIdCategorie(Categorie categorieByIdCategorie) {
+        this.categorieByIdCategorie = categorieByIdCategorie;
     }
 }

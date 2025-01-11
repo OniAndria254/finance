@@ -2,7 +2,7 @@ package itu.p16.finance.entity;
 
 import jakarta.persistence.*;
 
-import java.sql.Date;
+import java.util.List;
 
 @Entity
 public class Entreprise {
@@ -11,14 +11,10 @@ public class Entreprise {
     @Column(name = "id_entreprise", nullable = false)
     private Integer idEntreprise;
     @Basic
-    @Column(name = "nom_entreprise", nullable = false, length = 100)
-    private String nomEntreprise;
-    @Basic
-    @Column(name = "secteur_activite", nullable = true, length = 50)
-    private String secteurActivite;
-    @Basic
-    @Column(name = "date_creation", nullable = true)
-    private Date dateCreation;
+    @Column(name = "nom", nullable = true, length = 50)
+    private String nom;
+    @OneToMany(mappedBy = "entrepriseByIdEntreprise")
+    private List<Bilan> bilansByIdEntreprise;
 
     public Integer getIdEntreprise() {
         return idEntreprise;
@@ -28,28 +24,12 @@ public class Entreprise {
         this.idEntreprise = idEntreprise;
     }
 
-    public String getNomEntreprise() {
-        return nomEntreprise;
+    public String getNom() {
+        return nom;
     }
 
-    public void setNomEntreprise(String nomEntreprise) {
-        this.nomEntreprise = nomEntreprise;
-    }
-
-    public String getSecteurActivite() {
-        return secteurActivite;
-    }
-
-    public void setSecteurActivite(String secteurActivite) {
-        this.secteurActivite = secteurActivite;
-    }
-
-    public Date getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setDateCreation(Date dateCreation) {
-        this.dateCreation = dateCreation;
+    public void setNom(String nom) {
+        this.nom = nom;
     }
 
     @Override
@@ -60,11 +40,7 @@ public class Entreprise {
         Entreprise that = (Entreprise) o;
 
         if (idEntreprise != null ? !idEntreprise.equals(that.idEntreprise) : that.idEntreprise != null) return false;
-        if (nomEntreprise != null ? !nomEntreprise.equals(that.nomEntreprise) : that.nomEntreprise != null)
-            return false;
-        if (secteurActivite != null ? !secteurActivite.equals(that.secteurActivite) : that.secteurActivite != null)
-            return false;
-        if (dateCreation != null ? !dateCreation.equals(that.dateCreation) : that.dateCreation != null) return false;
+        if (nom != null ? !nom.equals(that.nom) : that.nom != null) return false;
 
         return true;
     }
@@ -72,9 +48,15 @@ public class Entreprise {
     @Override
     public int hashCode() {
         int result = idEntreprise != null ? idEntreprise.hashCode() : 0;
-        result = 31 * result + (nomEntreprise != null ? nomEntreprise.hashCode() : 0);
-        result = 31 * result + (secteurActivite != null ? secteurActivite.hashCode() : 0);
-        result = 31 * result + (dateCreation != null ? dateCreation.hashCode() : 0);
+        result = 31 * result + (nom != null ? nom.hashCode() : 0);
         return result;
+    }
+
+    public List<Bilan> getBilansByIdEntreprise() {
+        return bilansByIdEntreprise;
+    }
+
+    public void setBilansByIdEntreprise(List<Bilan> bilansByIdEntreprise) {
+        this.bilansByIdEntreprise = bilansByIdEntreprise;
     }
 }
