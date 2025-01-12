@@ -262,6 +262,126 @@ FROM
     impots_taxes;
 
 
+-- V. Résultat opérationnel
+CREATE VIEW vue_resultat_operationnel AS
+WITH autres_produits AS (
+    SELECT COALESCE(SUM(valeur), 0) as ap
+    FROM Bilan
+    WHERE Id_Categorie = 7
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '75%')
+),
+autres_charges AS (
+    SELECT COALESCE(SUM(valeur), 0) as ac
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '65%')
+),
+dotations AS (
+    SELECT COALESCE(SUM(valeur), 0) as dot
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '68%')
+),
+reprises AS (
+    SELECT COALESCE(SUM(valeur), 0) as rep
+    FROM Bilan
+    WHERE Id_Categorie = 7
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '78%')
+)
+SELECT 
+    (ebe.ebe + ap - ac - dot + rep) as resultat_operationnel
+FROM 
+    vue_ebe ebe,
+    autres_produits,
+    autres_charges,
+    dotations,
+    reprises;
+
+-- VI. Résultat financier
+CREATE VIEW vue_resultat_financier AS
+WITH produits_financiers AS (
+    SELECT COALESCE(SUM(valeur), 0) as pf
+    FROM Bilan
+    WHERE Id_Categorie = 7
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '76%')
+),
+charges_financieres AS (
+    SELECT COALESCE(SUM(valeur), 0) as cf
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '66%')
+)
+SELECT (pf - cf) as resultat_financier
+FROM produits_financiers, charges_financieres;
+
+-- VII. Résultat avant impôts
+CREATE VIEW vue_resultat_avant_impots AS
+SELECT 
+    (ro.resultat_operationnel + rf.resultat_financier) as resultat_avant_impots
+FROM 
+    vue_resultat_operationnel ro,
+    vue_resultat_financier rf;
+
+-- VIII. Résultat net des activités ordinaires
+CREATE VIEW vue_resultat_net_ordinaire AS
+WITH impots_exigibles AS (
+    SELECT COALESCE(SUM(valeur), 0) as ie
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '695%')
+),
+impots_differes AS (
+    SELECT COALESCE(SUM(valeur), 0) as id
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '692%')
+)
+SELECT 
+    (rai.resultat_avant_impots - ie + id) as resultat_net_ordinaire
+FROM 
+    vue_resultat_avant_impots rai,
+    impots_exigibles,
+    impots_differes;
+
+-- IX. Résultat extraordinaire
+CREATE VIEW vue_resultat_extraordinaire AS
+WITH produits_extra AS (
+    SELECT COALESCE(SUM(valeur), 0) as pe
+    FROM Bilan
+    WHERE Id_Categorie = 7
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '77%')
+),
+charges_extra AS (
+    SELECT COALESCE(SUM(valeur), 0) as ce
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '67%')
+)
+SELECT (pe - ce) as resultat_extraordinaire
+FROM produits_extra, charges_extra;
+
+-- X. Résultat net de l'exercice
+CREATE VIEW vue_resultat_net AS
+SELECT 
+    (rno.resultat_net_ordinaire + re.resultat_extraordinaire) as resultat_net
+FROM 
+    vue_resultat_net_ordinaire rno,
+    vue_resultat_extraordinaire re;
+
+
+SELECT * FROM vue_production_exercice;
+SELECT * FROM vue_consommation_exercice;
+SELECT * FROM vue_valeur_ajoutee;
+SELECT * FROM vue_ebe;
+SELECT * FROM vue_resultat_operationnel;
+SELECT * FROM vue_resultat_financier;
+SELECT * FROM vue_resultat_avant_impots;
+SELECT * FROM vue_resultat_net_ordinaire;
+SELECT * FROM vue_resultat_extraordinaire;
+SELECT * FROM vue_resultat_net;
+
+
+
 
 
 
