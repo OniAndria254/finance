@@ -444,7 +444,7 @@ SELECT * FROM vue_resultat_net_ordinaire(2023);
 SELECT * FROM vue_resultat_extraordinaire(2023);
 SELECT * FROM vue_resultat_net(2023);
 
-
+-- requete pour afficher les données de la table Bilan(efa niala ny charge si produit)
 SELECT 
     b.Id_Bilan,
     c.Id_Categorie,
