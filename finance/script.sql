@@ -469,5 +469,6 @@ LEFT JOIN
 WHERE 
     c.compte::text NOT LIKE '6%'  
     AND c.compte::text NOT LIKE '7%'  
+    AND EXTRACT(YEAR FROM b.date_enregistrement) = 2023  -- Filtre par année
 ORDER BY 
     b.Id_Bilan;
