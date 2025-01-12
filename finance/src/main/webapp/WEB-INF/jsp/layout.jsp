@@ -116,7 +116,7 @@
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="collapse" href="#compte" role="button" aria-expanded="false" aria-controls="compte">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-box link-icon"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        <span class="link-title">Compte de résultat</span>
+                        <span class="link-title">Compte de Gestion</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down link-arrow">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
@@ -124,7 +124,7 @@
                     <div class="collapse" id="compte">
                         <ul class="nav sub-menu">
                             <li class="nav-item">
-                                <a href="/compte_resultat/ajout" class="nav-link">Ajout</a>
+                                <a href="/compteGestion/ajouter" class="nav-link">Ajout</a>
                             </li>
                             <li class="nav-item">
                                 <a href="/compte_resultat/afficher" class="nav-link">Afficher</a>

@@ -28,13 +28,13 @@ public class BilanController {
         ModelAndView mv = new ModelAndView("layout");
         mv.addObject("page", "bilan/ajouterBilan");
         mv.addObject("entreprises", entrepriseService.getAllEntreprises());
-        mv.addObject("categories", categorieService.getAllCategories());
+        mv.addObject("categories", categorieService.getPostesBilan());
         return mv;
     }
 
     @PostMapping
     public String addBilan(@RequestParam Integer entrepriseId, @RequestParam Integer categorieId,
-                           @RequestParam Integer sousCategorieId, @RequestParam Integer sousSousCategorieId,
+                           @RequestParam(required = false) Integer sousCategorieId, @RequestParam(required = false) Integer sousSousCategorieId,
                            @RequestParam Double valeur, @RequestParam String date, @RequestParam String description) {
         bilanService.addBilan(entrepriseId, categorieId, sousCategorieId, sousSousCategorieId, valeur, date, description);
         return "redirect:/bilans/list";
