@@ -445,8 +445,29 @@ SELECT * FROM vue_resultat_extraordinaire(2023);
 SELECT * FROM vue_resultat_net(2023);
 
 
-
-
-
-
-
+SELECT 
+    b.Id_Bilan,
+    c.Id_Categorie,
+    c.compte AS compte_categorie,
+    c.nom_categorie AS nom_categorie,
+    sc.Id_Sous_Categorie,
+    sc.compte AS compte_sous_categorie,
+    sc.nom_sous_categorie AS nom_sous_categorie,
+    ssc.Id_Sous_Sous_Categorie,
+    ssc.compte AS compte_sous_sous_categorie,
+    ssc.nom AS nom_sous_sous_categorie,
+    b.description_note,
+    b.valeur
+FROM 
+    Bilan b
+INNER JOIN 
+    Categorie c ON b.Id_Categorie = c.Id_Categorie
+LEFT JOIN 
+    Sous_Categorie sc ON b.Id_Sous_Categorie = sc.Id_Sous_Categorie
+LEFT JOIN 
+    Sous_Sous_Categorie ssc ON b.Id_Sous_Sous_Categorie = ssc.Id_Sous_Sous_Categorie
+WHERE 
+    c.compte::text NOT LIKE '6%'  
+    AND c.compte::text NOT LIKE '7%'  
+ORDER BY 
+    b.Id_Bilan;
