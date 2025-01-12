@@ -1,8 +1,9 @@
 package itu.p16.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
+import java.lang.Double;
 import java.sql.Date;
 
 @Entity
@@ -16,20 +17,24 @@ public class Bilan {
     private String descriptionNote;
     @Basic
     @Column(name = "valeur", nullable = false, precision = 2)
-    private BigDecimal valeur;
+    private Double valeur;
     @Basic
     @Column(name = "date_enregistrement", nullable = false)
     private Date dateEnregistrement;
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "id_entreprise", referencedColumnName = "id_entreprise", nullable = false)
     private Entreprise entrepriseByIdEntreprise;
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "id_sous_sous_categorie", referencedColumnName = "id_sous_sous_categorie")
     private SousSousCategorie sousSousCategorieByIdSousSousCategorie;
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "id_sous_categorie", referencedColumnName = "id_sous_categorie")
     private SousCategorie sousCategorieByIdSousCategorie;
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "id_categorie", referencedColumnName = "id_categorie", nullable = false)
     private Categorie categorieByIdCategorie;
 
@@ -49,11 +54,11 @@ public class Bilan {
         this.descriptionNote = descriptionNote;
     }
 
-    public BigDecimal getValeur() {
+    public Double getValeur() {
         return valeur;
     }
 
-    public void setValeur(BigDecimal valeur) {
+    public void setValeur(Double valeur) {
         this.valeur = valeur;
     }
 

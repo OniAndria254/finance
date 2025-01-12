@@ -1,5 +1,6 @@
 package itu.p16.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -17,8 +18,10 @@ public class Categorie {
     @Column(name = "nom_categorie", nullable = false, length = 50)
     private String nomCategorie;
     @OneToMany(mappedBy = "categorieByIdCategorie")
+    @JsonIgnore
     private List<Bilan> bilansByIdCategorie;
     @OneToMany(mappedBy = "categorieByIdCategorie")
+    @JsonIgnore
     private List<SousCategorie> sousCategoriesByIdCategorie;
 
     public Integer getIdCategorie() {
