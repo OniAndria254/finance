@@ -15,7 +15,7 @@
     <div class="col-sm-6">
       <div class="mb-3">
         <label for="entreprise" class="form-label">Entreprise:</label>
-        <select class="form-control" id="entreprise" name="entreprise" required>
+        <select class="form-control" id="entreprise" name="entrepriseId" required>
           <option value="">Sélectionnez une entreprise</option>
           <%
             List<Entreprise> entreprises = (List<Entreprise>) request.getAttribute("entreprises");
@@ -35,9 +35,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="categorie" class="form-label">Catégorie:</label>
-        <select class="form-control" id="categorie" name="categorie" required>
-          <option value="">Sélectionnez une catégorie</option>
+        <label for="categorie" class="form-label">Classe de bilan:</label>
+        <select class="form-control" id="categorie" name="categorieId" required>
+          <option value="">Sélectionnez une classe de bilan</option>
           <%
             List<Categorie> categories = (List<Categorie>) request.getAttribute("categories");
             if (categories != null) {
@@ -56,9 +56,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="sousCategorie" class="form-label">Sous-catégorie:</label>
-        <select class="form-control" id="sousCategorie" name="sousCategorie" required>
-          <option value="">Sélectionnez une sous-catégorie</option>
+        <label for="sousCategorie" class="form-label">Sous-rubrique:</label>
+        <select class="form-control" id="sousCategorie" name="sousCategorieId" required>
+          <option value="">Sélectionnez une sous-rubrique</option>
         </select>
       </div>
     </div><!-- Col -->
@@ -67,9 +67,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="sousSousCategorie" class="form-label">Sous-sous-catégorie:</label>
-        <select class="form-control" id="sousSousCategorie" name="sousSousCategorie" required>
-          <option value="">Sélectionnez une sous-sous-catégorie</option>
+        <label for="sousSousCategorie" class="form-label">Détail du poste:</label>
+        <select class="form-control" id="sousSousCategorie" name="sousSousCategorieId">
+          <option value="">Sélectionnez un détail du poste</option>
         </select>
       </div>
     </div><!-- Col -->
@@ -78,7 +78,16 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="valeur" class="form-label">Valeur:</label>
+        <label for="description" class="form-label">Description:</label>
+        <input type="text" class="form-control" id="description" name="description" required>
+      </div>
+    </div><!-- Col -->
+  </div><!-- Row -->
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="mb-3">
+        <label for="valeur" class="form-label">Montant:</label>
         <input type="number" class="form-control" id="valeur" name="valeur" required step="0.01">
       </div>
     </div><!-- Col -->
@@ -87,7 +96,7 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="date" class="form-label">Date:</label>
+        <label for="date" class="form-label">Date d'enregistrement:</label>
         <input type="date" class="form-control" id="date" name="date" required>
       </div>
     </div><!-- Col -->
@@ -138,7 +147,7 @@
           success: function(data) {
             $('#sousSousCategorie').empty().append('<option value="">Sélectionnez une sous-sous-catégorie</option>');
             $.each(data, function(key, value) {
-              $('#sousSousCategorie').append('<option value="' + value.id + '">' + value.nom + '</option>');
+              $('#sousSousCategorie').append('<option value="' + value.idSousSousCategorie + '">' + value.nom + '</option>');
             });
           }
         });
