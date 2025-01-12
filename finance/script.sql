@@ -372,7 +372,7 @@ INSERT INTO Sous_Categorie (compte, nom_sous_categorie, Id_Categorie) VALUES
 -- Pertes de valeur sur comptes financiers
 (59, 'Pertes de valeur sur comptes financiers', 5),
 (591, 'Pertes de valeur sur valeurs en banque et Ets financiers', 5),
-(594, 'Pertes de valeur sur regies d avances et accreditifs', 5);,
+(594, 'Pertes de valeur sur regies d avances et accreditifs', 5),
 
 -- Classe 6 - Comptes de charge (imputation par nature)
 
