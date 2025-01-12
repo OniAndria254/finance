@@ -14,9 +14,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="entreprise" class="form-label">Entreprise:</label>
+        <label for="entreprise" class="form-label">Société:</label>
         <select class="form-control" id="entreprise" name="entrepriseId" required>
-          <option value="">Sélectionnez une entreprise</option>
+          <option value="">Sélectionnez une société</option>
           <%
             List<Entreprise> entreprises = (List<Entreprise>) request.getAttribute("entreprises");
             if (entreprises != null) {
