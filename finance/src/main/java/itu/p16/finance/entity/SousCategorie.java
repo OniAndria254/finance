@@ -3,7 +3,6 @@ package itu.p16.finance.entity;
 import jakarta.persistence.*;
 
 import java.util.List;
-import java.util.List;
 
 @Entity
 @Table(name = "sous_categorie", schema = "public", catalog = "finance2")

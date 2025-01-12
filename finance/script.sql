@@ -180,205 +180,270 @@ INSERT INTO Bilan (description_note, valeur, date_enregistrement, Id_Entreprise,
 ('Vente locale janvier', 300000.00, '2023-01-15', 1, null, null, 7),
 ('Vente export fevrier', 200000.00, '2023-02-20', 1, null, null, 7);
 
-
 -- I. Production de l'exercice
-CREATE VIEW vue_production_exercice AS
-WITH chiffre_affaires AS (
-    SELECT COALESCE(SUM(valeur), 0) as ca
-    FROM Bilan
-    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '71%')
-),
-production_stockee AS (
-    SELECT COALESCE(SUM(valeur), 0) as ps
-    FROM Bilan
-    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '72%')
-),
-production_immobilisee AS (
-    SELECT COALESCE(SUM(valeur), 0) as pi
-    FROM Bilan
-    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '73%')
-),
-production AS (
-    SELECT COALESCE(SUM(valeur), 0) as p
-    FROM Bilan
-    WHERE Id_Categorie = 7
-    AND Id_Sous_Categorie IS NULL
-)
-SELECT (ca + ps + pi + p) as production_exercice
-FROM chiffre_affaires, production_stockee, production_immobilisee, production;
-
+CREATE OR REPLACE FUNCTION vue_production_exercice(annee INTEGER) 
+RETURNS TABLE (production_exercice NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH chiffre_affaires AS (
+        SELECT COALESCE(SUM(valeur), 0) as ca
+        FROM Bilan
+        WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '71%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    production_stockee AS (
+        SELECT COALESCE(SUM(valeur), 0) as ps
+        FROM Bilan
+        WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '72%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    production_immobilisee AS (
+        SELECT COALESCE(SUM(valeur), 0) as pi
+        FROM Bilan
+        WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '73%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    production AS (
+        SELECT COALESCE(SUM(valeur), 0) as p
+        FROM Bilan
+        WHERE Id_Categorie = 7
+        AND Id_Sous_Categorie IS NULL
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT (ca + ps + pi + p) as production_exercice
+    FROM chiffre_affaires, production_stockee, production_immobilisee, production;
+END;
+$$ LANGUAGE plpgsql;
 
 -- II. Consommation de l'exercice
-CREATE VIEW vue_consommation_exercice AS
-WITH achats_consommes AS (
-    SELECT COALESCE(SUM(valeur), 0) as ac
-    FROM Bilan
-    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '61%')
-),
-services_exterieurs AS (
-    SELECT COALESCE(SUM(valeur), 0) as se
-    FROM Bilan
-    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '62%')
-),
-consommation AS (
-    SELECT COALESCE(SUM(valeur), 0) as c
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IS NULL
-)
-SELECT (ac + se + c) as consommation_exercice
-FROM achats_consommes, services_exterieurs, consommation;
+CREATE OR REPLACE FUNCTION vue_consommation_exercice(annee INTEGER) 
+RETURNS TABLE (consommation_exercice NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH achats_consommes AS (
+        SELECT COALESCE(SUM(valeur), 0) as ac
+        FROM Bilan
+        WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '61%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    services_exterieurs AS (
+        SELECT COALESCE(SUM(valeur), 0) as se
+        FROM Bilan
+        WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '62%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    consommation AS (
+        SELECT COALESCE(SUM(valeur), 0) as c
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IS NULL
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT (ac + se + c) as consommation_exercice
+    FROM achats_consommes, services_exterieurs, consommation;
+END;
+$$ LANGUAGE plpgsql;
 
+-- III. Valeur ajoutée
+CREATE OR REPLACE FUNCTION vue_valeur_ajoutee(annee INTEGER) 
+RETURNS TABLE (valeur_ajoutee NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        (p.production_exercice - c.consommation_exercice) as valeur_ajoutee
+    FROM 
+        vue_production_exercice(annee) p,
+        vue_consommation_exercice(annee) c;
+END;
+$$ LANGUAGE plpgsql;
 
-
--- III. Valeur ajoutée d'exploitation
-CREATE VIEW vue_valeur_ajoutee AS
-SELECT 
-    (production.production_exercice - consommation.consommation_exercice) as valeur_ajoutee
-FROM 
-    vue_production_exercice production,
-    vue_consommation_exercice consommation;
-
-
--- IV. EBE (Excédent brut d'exploitation)
-CREATE VIEW vue_ebe AS
-WITH charges_personnel AS (
-    SELECT COALESCE(SUM(valeur), 0) as cp
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '63%')
-),
-impots_taxes AS (
-    SELECT COALESCE(SUM(valeur), 0) as it
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '64%')
-)
-SELECT 
-    (va.valeur_ajoutee - cp - it) as ebe
-FROM 
-    vue_valeur_ajoutee va,
-    charges_personnel,
-    impots_taxes;
-
+-- IV. EBE
+CREATE OR REPLACE FUNCTION vue_ebe(annee INTEGER) 
+RETURNS TABLE (ebe NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH charges_personnel AS (
+        SELECT COALESCE(SUM(valeur), 0) as cp
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '63%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    impots_taxes AS (
+        SELECT COALESCE(SUM(valeur), 0) as it
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '64%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT
+        (va.valeur_ajoutee - cp - it) as ebe
+    FROM
+        vue_valeur_ajoutee(annee) va,
+        charges_personnel,
+        impots_taxes;
+END;
+$$ LANGUAGE plpgsql;
 
 -- V. Résultat opérationnel
-CREATE VIEW vue_resultat_operationnel AS
-WITH autres_produits AS (
-    SELECT COALESCE(SUM(valeur), 0) as ap
-    FROM Bilan
-    WHERE Id_Categorie = 7
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '75%')
-),
-autres_charges AS (
-    SELECT COALESCE(SUM(valeur), 0) as ac
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '65%')
-),
-dotations AS (
-    SELECT COALESCE(SUM(valeur), 0) as dot
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '68%')
-),
-reprises AS (
-    SELECT COALESCE(SUM(valeur), 0) as rep
-    FROM Bilan
-    WHERE Id_Categorie = 7
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '78%')
-)
-SELECT 
-    (ebe.ebe + ap - ac - dot + rep) as resultat_operationnel
-FROM 
-    vue_ebe ebe,
-    autres_produits,
-    autres_charges,
-    dotations,
-    reprises;
+CREATE OR REPLACE FUNCTION vue_resultat_operationnel(annee INTEGER) 
+RETURNS TABLE (resultat_operationnel NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH autres_produits AS (
+        SELECT COALESCE(SUM(valeur), 0) as ap
+        FROM Bilan
+        WHERE Id_Categorie = 7
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '75%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    autres_charges AS (
+        SELECT COALESCE(SUM(valeur), 0) as ac
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '65%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    dotations AS (
+        SELECT COALESCE(SUM(valeur), 0) as dot
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '68%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    reprises AS (
+        SELECT COALESCE(SUM(valeur), 0) as rep
+        FROM Bilan
+        WHERE Id_Categorie = 7
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '78%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT
+        (e.ebe + ap - ac - dot + rep) as resultat_operationnel
+    FROM
+        vue_ebe(annee) e,
+        autres_produits,
+        autres_charges,
+        dotations,
+        reprises;
+END;
+$$ LANGUAGE plpgsql;
 
 -- VI. Résultat financier
-CREATE VIEW vue_resultat_financier AS
-WITH produits_financiers AS (
-    SELECT COALESCE(SUM(valeur), 0) as pf
-    FROM Bilan
-    WHERE Id_Categorie = 7
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '76%')
-),
-charges_financieres AS (
-    SELECT COALESCE(SUM(valeur), 0) as cf
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '66%')
-)
-SELECT (pf - cf) as resultat_financier
-FROM produits_financiers, charges_financieres;
+CREATE OR REPLACE FUNCTION vue_resultat_financier(annee INTEGER) 
+RETURNS TABLE (resultat_financier NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH produits_financiers AS (
+        SELECT COALESCE(SUM(valeur), 0) as pf
+        FROM Bilan
+        WHERE Id_Categorie = 7
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '76%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    charges_financieres AS (
+        SELECT COALESCE(SUM(valeur), 0) as cf
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '66%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT (pf - cf) as resultat_financier
+    FROM produits_financiers, charges_financieres;
+END;
+$$ LANGUAGE plpgsql;
 
 -- VII. Résultat avant impôts
-CREATE VIEW vue_resultat_avant_impots AS
-SELECT 
-    (ro.resultat_operationnel + rf.resultat_financier) as resultat_avant_impots
-FROM 
-    vue_resultat_operationnel ro,
-    vue_resultat_financier rf;
+CREATE OR REPLACE FUNCTION vue_resultat_avant_impots(annee INTEGER) 
+RETURNS TABLE (resultat_avant_impots NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        (ro.resultat_operationnel + rf.resultat_financier) as resultat_avant_impots
+    FROM
+        vue_resultat_operationnel(annee) ro,
+        vue_resultat_financier(annee) rf;
+END;
+$$ LANGUAGE plpgsql;
 
--- VIII. Résultat net des activités ordinaires
-CREATE VIEW vue_resultat_net_ordinaire AS
-WITH impots_exigibles AS (
-    SELECT COALESCE(SUM(valeur), 0) as ie
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '695%')
-),
-impots_differes AS (
-    SELECT COALESCE(SUM(valeur), 0) as id
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '692%')
-)
-SELECT 
-    (rai.resultat_avant_impots - ie + id) as resultat_net_ordinaire
-FROM 
-    vue_resultat_avant_impots rai,
-    impots_exigibles,
-    impots_differes;
+-- VIII. Résultat net ordinaire
+CREATE OR REPLACE FUNCTION vue_resultat_net_ordinaire(annee INTEGER) 
+RETURNS TABLE (resultat_net_ordinaire NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH impots_exigibles AS (
+        SELECT COALESCE(SUM(valeur), 0) as ie
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '695%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    impots_differes AS (
+        SELECT COALESCE(SUM(valeur), 0) as id
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '692%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT
+        (rai.resultat_avant_impots - ie + id) as resultat_net_ordinaire
+    FROM
+        vue_resultat_avant_impots(annee) rai,
+        impots_exigibles,
+        impots_differes;
+END;
+$$ LANGUAGE plpgsql;
 
 -- IX. Résultat extraordinaire
-CREATE VIEW vue_resultat_extraordinaire AS
-WITH produits_extra AS (
-    SELECT COALESCE(SUM(valeur), 0) as pe
-    FROM Bilan
-    WHERE Id_Categorie = 7
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '77%')
-),
-charges_extra AS (
-    SELECT COALESCE(SUM(valeur), 0) as ce
-    FROM Bilan
-    WHERE Id_Categorie = 6
-    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '67%')
-)
-SELECT (pe - ce) as resultat_extraordinaire
-FROM produits_extra, charges_extra;
+CREATE OR REPLACE FUNCTION vue_resultat_extraordinaire(annee INTEGER) 
+RETURNS TABLE (resultat_extraordinaire NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    WITH produits_extra AS (
+        SELECT COALESCE(SUM(valeur), 0) as pe
+        FROM Bilan
+        WHERE Id_Categorie = 7
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '77%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    ),
+    charges_extra AS (
+        SELECT COALESCE(SUM(valeur), 0) as ce
+        FROM Bilan
+        WHERE Id_Categorie = 6
+        AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '67%')
+        AND EXTRACT(YEAR FROM date_enregistrement) = annee
+    )
+    SELECT (pe - ce) as resultat_extraordinaire
+    FROM produits_extra, charges_extra;
+END;
+$$ LANGUAGE plpgsql;
 
--- X. Résultat net de l'exercice
-CREATE VIEW vue_resultat_net AS
-SELECT 
-    (rno.resultat_net_ordinaire + re.resultat_extraordinaire) as resultat_net
-FROM 
-    vue_resultat_net_ordinaire rno,
-    vue_resultat_extraordinaire re;
+-- X. Résultat net
+CREATE OR REPLACE FUNCTION vue_resultat_net(annee INTEGER) 
+RETURNS TABLE (resultat_net NUMERIC) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        (rno.resultat_net_ordinaire + re.resultat_extraordinaire) as resultat_net
+    FROM
+        vue_resultat_net_ordinaire(annee) rno,
+        vue_resultat_extraordinaire(annee) re;
+END;
+$$ LANGUAGE plpgsql;
 
 
-SELECT * FROM vue_production_exercice;
-SELECT * FROM vue_consommation_exercice;
-SELECT * FROM vue_valeur_ajoutee;
-SELECT * FROM vue_ebe;
-SELECT * FROM vue_resultat_operationnel;
-SELECT * FROM vue_resultat_financier;
-SELECT * FROM vue_resultat_avant_impots;
-SELECT * FROM vue_resultat_net_ordinaire;
-SELECT * FROM vue_resultat_extraordinaire;
-SELECT * FROM vue_resultat_net;
+
+SELECT * FROM vue_production_exercice(2023);
+SELECT * FROM vue_consommation_exercice(2023);
+SELECT * FROM vue_valeur_ajoutee(2023);
+SELECT * FROM vue_ebe(2023);
+SELECT * FROM vue_resultat_operationnel(2023);
+SELECT * FROM vue_resultat_financier(2023);
+SELECT * FROM vue_resultat_avant_impots(2023);
+SELECT * FROM vue_resultat_net_ordinaire(2023);
+SELECT * FROM vue_resultat_extraordinaire(2023);
+SELECT * FROM vue_resultat_net(2023);
+
 
 
 
