@@ -35,8 +35,8 @@ public class BilanController {
     @PostMapping
     public String addBilan(@RequestParam Integer entrepriseId, @RequestParam Integer categorieId,
                            @RequestParam Integer sousCategorieId, @RequestParam Integer sousSousCategorieId,
-                           @RequestParam Double valeur, @RequestParam String date) {
-        bilanService.addBilan(entrepriseId, categorieId, sousCategorieId, sousSousCategorieId, valeur, date);
+                           @RequestParam Double valeur, @RequestParam String date, @RequestParam String description) {
+        bilanService.addBilan(entrepriseId, categorieId, sousCategorieId, sousSousCategorieId, valeur, date, description);
         return "redirect:/bilans/list";
     }
 }

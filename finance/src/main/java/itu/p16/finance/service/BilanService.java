@@ -27,12 +27,13 @@ public class BilanService {
     @Autowired
     private SousSousCategorieService sousSousCategorieService;
 
-    public void addBilan(Integer entrepriseId, Integer categorieId, Integer sousCategorieId, Integer sousSousCategorieId, Double valeur, String date) {
+    public void addBilan(Integer entrepriseId, Integer categorieId, Integer sousCategorieId, Integer sousSousCategorieId, Double valeur, String date, String description) {
         Bilan bilan = new Bilan();
         bilan.setEntrepriseByIdEntreprise(entrepriseService.getEntrepriseById(entrepriseId));
         bilan.setCategorieByIdCategorie(categorieService.getCategorieById(categorieId));
         bilan.setSousCategorieByIdSousCategorie(sousCategorieService.getSousCategorieById(sousCategorieId));
         bilan.setSousSousCategorieByIdSousSousCategorie(sousSousCategorieService.getSousSousCategorieById(sousSousCategorieId));
+        bilan.setDescriptionNote(description);
         bilan.setValeur(valeur);
         bilan.setDateEnregistrement(Date.valueOf(LocalDate.parse(date)));
         bilanRepository.save(bilan);

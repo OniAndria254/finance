@@ -45,21 +45,105 @@ CREATE TABLE Bilan(
     FOREIGN KEY(Id_Categorie) REFERENCES Categorie(Id_Categorie)
 );
 
+INSERT INTO Bilan (description_note, valeur, date_enregistrement, Id_Entreprise, Id_Sous_Sous_Categorie, Id_Sous_Categorie, Id_Categorie) VALUES
+('Vente locale janvier', 300000.00, '2023-01-15', 1, null, null, 7),
+('Vente export fevrier', 200000.00, '2023-02-20', 1, null, null, 7);
 
--- Entreprise
-INSERT INTO Entreprise (nom) VALUES 
-('SARL Example'),
-('SA Finance Corp');
+-- Entries without subcategories
+-- I. Production de l'exercice
+CREATE VIEW vue_production_exercice AS
+WITH chiffre_affaires AS (
+    SELECT COALESCE(SUM(valeur), 0) as ca
+    FROM Bilan
+    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '71%')
+),
+production_stockee AS (
+    SELECT COALESCE(SUM(valeur), 0) as ps
+    FROM Bilan
+    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '72%')
+),
+production_immobilisee AS (
+    SELECT COALESCE(SUM(valeur), 0) as pi
+    FROM Bilan
+    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '73%')
+),
+production AS (
+    SELECT COALESCE(SUM(valeur), 0) as p
+    FROM Bilan
+    WHERE Id_Categorie = 7
+    AND Id_Sous_Categorie IS NULL
+)
+SELECT (ca + ps + pi + p) as production_exercice
+FROM chiffre_affaires, production_stockee, production_immobilisee, production;
+
+
+-- II. Consommation de l'exercice
+CREATE VIEW vue_consommation_exercice AS
+WITH achats_consommes AS (
+    SELECT COALESCE(SUM(valeur), 0) as ac
+    FROM Bilan
+    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '61%')
+),
+services_exterieurs AS (
+    SELECT COALESCE(SUM(valeur), 0) as se
+    FROM Bilan
+    WHERE Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '62%')
+),
+consommation AS (
+    SELECT COALESCE(SUM(valeur), 0) as c
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IS NULL
+)
+SELECT (ac + se + c) as consommation_exercice
+FROM achats_consommes, services_exterieurs, consommation;
+
+
+-- III. Valeur ajoutée d'exploitation
+CREATE VIEW vue_valeur_ajoutee AS
+SELECT
+    (production.production_exercice - consommation.consommation_exercice) as valeur_ajoutee
+FROM
+    vue_production_exercice production,
+    vue_consommation_exercice consommation;
+
+
+
+-- IV. EBE (Excédent brut d'exploitation)
+CREATE VIEW vue_ebe AS
+WITH charges_personnel AS (
+    SELECT COALESCE(SUM(valeur), 0) as cp
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '63%')
+),
+impots_taxes AS (
+    SELECT COALESCE(SUM(valeur), 0) as it
+    FROM Bilan
+    WHERE Id_Categorie = 6
+    AND Id_Sous_Categorie IN (SELECT Id_Sous_Categorie FROM Sous_Categorie WHERE compte::text LIKE '64%')
+)
+SELECT
+    (va.valeur_ajoutee - cp - it) as ebe
+FROM
+    vue_valeur_ajoutee va,
+    charges_personnel,
+    impots_taxes;
+
+
+INSERT INTO Entreprise (nom) VALUES
+                                 ('SARL Example'),
+                                 ('SA Finance Corp');
 
 -- Categories principales
-INSERT INTO Categorie (compte, nom_categorie) VALUES 
-(100, 'Actifs non courants'),
-(200, 'Actifs courants'),
-(300, 'Capitaux propres'),
-(400, 'Passifs non courants'),
-(500, 'Passifs courants'),
-(600, 'Charges'),
-(700, 'Revenus (Produits)');
+INSERT INTO Categorie (compte, nom_categorie) VALUES
+                                                  (100, 'Actifs non courants'),
+                                                  (200, 'Actifs courants'),
+                                                  (300, 'Capitaux propres'),
+                                                  (400, 'Passifs non courants'),
+                                                  (500, 'Passifs courants'),
+                                                  (600, 'Charges'),
+                                                  (700, 'Revenus (Produits)');
 
 -- Sous categories
 INSERT INTO Sous_Categorie (compte, nom_sous_categorie, Id_Categorie) VALUES
@@ -517,7 +601,6 @@ INSERT INTO Bilan (description_note, valeur, date_enregistrement, Id_Entreprise,
 ('Services mars', 150000.00, '2023-03-10', 1, 35, 20, 7),
 ('Gain change avril', 50000.00, '2023-04-10', 1, 34, 21, 7);
 
--- Entries without subcategories
 INSERT INTO Bilan (description_note, valeur, date_enregistrement, Id_Entreprise, Id_Sous_Sous_Categorie, Id_Sous_Categorie, Id_Categorie) VALUES
 ('Vente locale janvier', 300000.00, '2023-01-15', 1, null, null, 7),
 ('Vente export fevrier', 200000.00, '2023-02-20', 1, null, null, 7);
@@ -602,8 +685,6 @@ FROM
     vue_valeur_ajoutee va,
     charges_personnel,
     impots_taxes;
-
-
 
 
 
