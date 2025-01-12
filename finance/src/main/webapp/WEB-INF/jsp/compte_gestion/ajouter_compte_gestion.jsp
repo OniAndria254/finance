@@ -10,7 +10,7 @@
 <body>
 <h2>Ajouter un poste de bilan</h2>
 
-<form action="/bilans" method="POST">
+<form action="/compteGestion" method="POST">
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
@@ -35,9 +35,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="categorie" class="form-label">Classe de bilan:</label>
+        <label for="categorie" class="form-label">Classe de gestion:</label>
         <select class="form-control" id="categorie" name="categorieId" required>
-          <option value="">Sélectionnez une classe de bilan</option>
+          <option value="">Sélectionnez une classe de gestion</option>
           <%
             List<Categorie> categories = (List<Categorie>) request.getAttribute("categories");
             if (categories != null) {
@@ -56,9 +56,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="sousCategorie" class="form-label">Sous-rubrique:</label>
+        <label for="sousCategorie" class="form-label">Type de compte:</label>
         <select class="form-control" id="sousCategorie" name="sousCategorieId" required>
-          <option value="">Sélectionnez une sous-rubrique</option>
+          <option value="">Sélectionnez un type de compte</option>
         </select>
       </div>
     </div><!-- Col -->
@@ -67,9 +67,9 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="mb-3">
-        <label for="sousSousCategorie" class="form-label">Détail du poste:</label>
+        <label for="sousSousCategorie" class="form-label">Compte spécifique:</label>
         <select class="form-control" id="sousSousCategorie" name="sousSousCategorieId">
-          <option value="">Sélectionnez un détail du poste</option>
+          <option value="">Sélectionnez un compte spécifique</option>
         </select>
       </div>
     </div><!-- Col -->
@@ -108,7 +108,7 @@
 </form>
 
 <br>
-<a href="/bilans/list" class="btn btn-link">Voir le Bilan de l'entreprise</a>
+<a href="/compteGestion/list" class="btn btn-link">Voir le Compte de résultat</a>
 
 <script>
   $(document).ready(function() {
@@ -122,7 +122,7 @@
           data: { categorieId: categorieId },
           success: function(data) {
             console.log("Réponse reçue :", data); // Debug
-            $('#sousCategorie').empty().append('<option value="">Sélectionnez une sous-rubrique</option>');
+            $('#sousCategorie').empty().append('<option value="">Sélectionnez un type de compte</option>');
             $.each(data, function(key, value) {
               $('#sousCategorie').append('<option value="' + value.idSousCategorie + '">' + value.nomSousCategorie + '</option>');
             });
@@ -132,7 +132,7 @@
           }
         });
       } else {
-        $('#sousCategorie').empty().append('<option value="">Sélectionnez une sous-rubrique</option>');
+        $('#sousCategorie').empty().append('<option value="">Sélectionnez un type de compte</option>');
       }
     });
 
@@ -145,14 +145,14 @@
           type: 'GET',
           data: { sousCategorieId: sousCategorieId },
           success: function(data) {
-            $('#sousSousCategorie').empty().append('<option value="">Sélectionnez un détail du poste</option>');
+            $('#sousSousCategorie').empty().append('<option value="">Sélectionnez un compte spécifique</option>');
             $.each(data, function(key, value) {
               $('#sousSousCategorie').append('<option value="' + value.idSousSousCategorie + '">' + value.nom + '</option>');
             });
           }
         });
       } else {
-        $('#sousSousCategorie').empty().append('<option value="">Sélectionnez un détail du poste</option>');
+        $('#sousSousCategorie').empty().append('<option value="">Sélectionnez un compte spécifique</option>');
       }
     });
   });
