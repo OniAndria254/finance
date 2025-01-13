@@ -57,7 +57,7 @@
     <div class="col-sm-6">
       <div class="mb-3">
         <label for="sousCategorie" class="form-label">Sous-rubrique:</label>
-        <select class="form-control" id="sousCategorie" name="sousCategorieId" required>
+        <select class="form-control" id="sousCategorie" name="sousCategorieId">
           <option value="">Sélectionnez une sous-rubrique</option>
         </select>
       </div>
@@ -106,9 +106,6 @@
 
   <button type="submit" class="btn btn-primary submit">Ajouter</button>
 </form>
-
-<br>
-<a href="/bilans/list" class="btn btn-link">Voir le Bilan de l'entreprise</a>
 
 <script>
   $(document).ready(function() {

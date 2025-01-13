@@ -37,6 +37,6 @@ public class CompteGestionController {
                            @RequestParam(required = false) Integer sousCategorieId, @RequestParam(required = false) Integer sousSousCategorieId,
                            @RequestParam Double valeur, @RequestParam String date, @RequestParam String description) {
         bilanService.addBilan(entrepriseId, categorieId, sousCategorieId, sousSousCategorieId, valeur, date, description);
-        return "redirect:/compte-resultat";
+        return "redirect:/compteResultat/select";
     }
 }

@@ -36,7 +36,7 @@
     <!-- endinject -->
 
     <!-- Layout styles -->
-    <link rel="stylesheet" href="/assets/css/demo2/style.css">
+    <link rel="stylesheet" href="/assets/css/demo1/style.css">
 
     <!-- End layout styles -->
 
@@ -104,11 +104,12 @@
                     <div class="collapse" id="bilan">
                         <ul class="nav sub-menu">
                             <li class="nav-item">
-                                <a href="/bilans/ajouter" class="nav-link">Ajout</a>
+                                <a href="/bilans/ajouter" class="nav-link">Ajout poste de bilan</a>
                             </li>
                             <li class="nav-item">
-                                <a href="/bilan/afficher" class="nav-link">Afficher</a>
+                                <a href="/bilans/select" class="nav-link">Analyse</a>
                             </li>
+
                         </ul>
                     </div>
                 </li>
@@ -127,11 +128,11 @@
                                 <a href="/compteGestion/ajouter" class="nav-link">Ajout</a>
                             </li>
                             <li class="nav-item">
-                                <a href="/compte_resultat/afficher" class="nav-link">Afficher</a>
+                                <a href="/compteResultat/select" class="nav-link">Voir Compte de Résultat</a>
                             </li>
 
                             <li class="nav-item">
-                                <a href="/indicateurs_financiers/indicateurs" class="nav-link">Indicateurs</a>
+                                <a href="/compteResultat/select-indicateur" class="nav-link">Indicateurs</a>
                             </li>
                         </ul>
                     </div>

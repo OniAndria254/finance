@@ -4,11 +4,11 @@
 
 <html>
 <head>
-  <title>Ajouter un poste de bilan</title>
+  <title>Ajouter un compte de gestion</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<h2>Ajouter un poste de bilan</h2>
+<h2>Ajouter un compte de gestion</h2>
 
 <form action="/compteGestion" method="POST">
   <div class="row">
